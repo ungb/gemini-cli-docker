@@ -4,25 +4,65 @@ services:
     build: .
     container_name: gemini-cli
     volumes:
-      # Mount your project directory
-      - ./workspace:/workspace
-      # Persist Gemini configuration between runs
-      - gemini-config:/home/coder/.gemini
+      # Mount your project directory (or use ./workspace)
+      - .:/workspace
+      # Share your host's Gemini config (settings, themes, auth)
+      - ~/.gemini:/home/coder/.gemini
       # SSH keys for git operations (read-only)
       - ~/.ssh:/home/coder/.ssh:ro
       # Git configuration (read-only)
       - ~/.gitconfig:/home/coder/.gitconfig:ro
-      # Optional: Google Cloud credentials
+      # Optional: Google Cloud credentials for Vertex AI
       # - ~/.config/gcloud:/home/coder/.config/gcloud:ro
     environment:
-      # Set your Google API key (from AI Studio)
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
-      # Or use Vertex AI
+      # Set your Google API key (not needed if using Google account auth)
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      # Optional: For Vertex AI
       # - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      # - GOOGLE_CLOUD_REGION=${GOOGLE_CLOUD_REGION:-us-central1}
     stdin_open: true
     tty: true
-    # Uncomment for host network mode (useful for OAuth)
+    working_dir: /workspace
+    # Uncomment for Google account login
     # network_mode: host
+
+  # Alternative: Use named volume instead of host mount
+  gemini-fresh:
+    image: ungb/gemini-cli:latest
+    build: .
+    container_name: gemini-cli-fresh
+    volumes:
+      - .:/workspace
+      - gemini-config:/home/coder/.gemini
+      - ~/.ssh:/home/coder/.ssh:ro
+      - ~/.gitconfig:/home/coder/.gitconfig:ro
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    profiles:
+      - fresh
+
+  # Vertex AI configuration
+  gemini-vertex:
+    image: ungb/gemini-cli:latest
+    build: .
+    container_name: gemini-cli-vertex
+    volumes:
+      - .:/workspace
+      - ~/.gemini:/home/coder/.gemini
+      - ~/.config/gcloud:/home/coder/.config/gcloud:ro
+      - ~/.ssh:/home/coder/.ssh:ro
+      - ~/.gitconfig:/home/coder/.gitconfig:ro
+    environment:
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_CLOUD_REGION=${GOOGLE_CLOUD_REGION:-us-central1}
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    profiles:
+      - vertex
 
 volumes:
   gemini-config:
