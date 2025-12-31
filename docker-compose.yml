@@ -1,0 +1,29 @@
+services:
+  gemini:
+    image: ungb/gemini-cli:latest
+    build: .
+    container_name: gemini-cli
+    volumes:
+      # Mount your project directory
+      - ./workspace:/workspace
+      # Persist Gemini configuration between runs
+      - gemini-config:/home/coder/.gemini
+      # SSH keys for git operations (read-only)
+      - ~/.ssh:/home/coder/.ssh:ro
+      # Git configuration (read-only)
+      - ~/.gitconfig:/home/coder/.gitconfig:ro
+      # Optional: Google Cloud credentials
+      # - ~/.config/gcloud:/home/coder/.config/gcloud:ro
+    environment:
+      # Set your Google API key (from AI Studio)
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      # Or use Vertex AI
+      # - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+    stdin_open: true
+    tty: true
+    # Uncomment for host network mode (useful for OAuth)
+    # network_mode: host
+
+volumes:
+  gemini-config:
+    name: gemini-cli-config
