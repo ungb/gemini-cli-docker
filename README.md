@@ -29,7 +29,9 @@ docker run -it --rm \
   ungb/gemini-cli
 ```
 
-### One-Shot Commands
+### One-Shot Commands (Non-Interactive)
+
+Use the `-p` (or `--prompt`) flag for non-interactive mode:
 
 ```bash
 # Ask a question about your codebase
@@ -37,36 +39,31 @@ docker run -it --rm \
   -v $(pwd):/workspace \
   -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
   ungb/gemini-cli \
-  gemini "explain the architecture of this project"
+  gemini -p "explain the architecture of this project"
 
 # Generate code
 docker run -it --rm \
   -v $(pwd):/workspace \
   -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
   ungb/gemini-cli \
-  gemini "create a REST API endpoint for user authentication"
-
-# Fix bugs
-docker run -it --rm \
-  -v $(pwd):/workspace \
-  -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
-  ungb/gemini-cli \
-  gemini "fix the failing tests in src/utils"
+  gemini -p "create a REST API endpoint for user authentication"
 
 # Code review
 docker run -it --rm \
   -v $(pwd):/workspace \
   -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
   ungb/gemini-cli \
-  gemini "review the changes in the last commit for security issues"
+  gemini -p "review the changes in the last commit for security issues"
 
-# Generate documentation
+# JSON output (for scripts/automation)
 docker run -it --rm \
   -v $(pwd):/workspace \
   -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
   ungb/gemini-cli \
-  gemini "generate API documentation for this module"
+  gemini -p --output-format json "list all TODO comments"
 ```
+
+> **Note**: Non-interactive mode (`-p`) has limitations - it cannot authorize tools like WriteFile or run shell commands. For tasks requiring file modifications, use interactive mode.
 
 ### With Full Configuration (Recommended)
 
@@ -101,8 +98,19 @@ echo "GOOGLE_API_KEY=your-key-here" > .env
 # Interactive session
 docker compose run --rm gemini
 
-# One-shot command
-docker compose run --rm gemini gemini "explain this code"
+# One-shot command (non-interactive, read-only)
+docker compose run --rm gemini gemini -p "explain this code"
+```
+
+### YOLO Mode (Auto-Approve)
+
+```bash
+# Auto-approve all tool calls (use with caution)
+docker run -it --rm \
+  -v $(pwd):/workspace \
+  -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
+  ungb/gemini-cli \
+  gemini --yolo "refactor this code"
 ```
 
 ### Sandbox Mode
@@ -113,19 +121,20 @@ docker run -it --rm \
   -v $(pwd):/workspace \
   -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
   ungb/gemini-cli \
-  gemini --sandbox "refactor this code"
+  gemini --sandbox "analyze this code"
 ```
 
 ### With Google Search Grounding
 
-Gemini CLI has built-in Google Search for up-to-date information:
+Gemini CLI has built-in Google Search for up-to-date information (works in interactive mode):
 
 ```bash
 docker run -it --rm \
   -v $(pwd):/workspace \
   -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
-  ungb/gemini-cli \
-  gemini "what are the latest best practices for React 19?"
+  ungb/gemini-cli
+
+# Then ask: "what are the latest best practices for React 19?"
 ```
 
 ## Sharing Your Gemini Configuration
@@ -397,7 +406,8 @@ alias gemini-docker='docker run -it --rm \
   -e GOOGLE_API_KEY=$GOOGLE_API_KEY \
   ungb/gemini-cli gemini'
 
-# Usage: gemini-docker "explain this code"
+# Usage (interactive): gemini-docker
+# Usage (one-shot):    gemini-docker -p "explain this code"
 ```
 
 ## License
