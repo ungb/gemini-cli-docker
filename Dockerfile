@@ -35,6 +35,8 @@ WORKDIR /workspace
 # Environment variables
 ENV HOME=/home/coder
 ENV GEMINI_CONFIG_DIR=/home/coder/.gemini
+ENV TERM=xterm-256color
+ENV COLORTERM=truecolor
 
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["gemini"]
